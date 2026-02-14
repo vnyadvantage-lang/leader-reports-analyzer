@@ -1,0 +1,118 @@
+// Prisma Schema for Leader Reports Analyzer
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Leader (Руководитель)
+model Leader {
+  id                 String      @id @default(uuid())
+  fullName           String
+  roleTitle          String
+  department         String?
+  photoUrl           String?
+  hireDate           DateTime?
+  status             String      @default("active") // active, inactive
+  salaryAmount       Float?
+  salaryCurrency     String      @default("USD")
+  salaryComment      String?
+  performiaSummary   String?     @db.Text
+  performiaFileUrl   String?
+  notes              String?     @db.Text
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  artifacts   Artifact[]
+  aiReviews   AIReview[]
+  auditLogs   AuditLog[]
+
+  @@map("leaders")
+}
+
+// Cycle (Цикл отчётности)
+model Cycle {
+  id          String      @id @default(uuid())
+  name        String      // "Cycle 2026-01"
+  type        String      // "5week" | "month" | "quarter" | "custom"
+  startDate   DateTime
+  endDate     DateTime
+  notes       String?     @db.Text
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  artifacts   Artifact[]
+  aiReviews   AIReview[]
+
+  @@map("cycles")
+}
+
+// Artifact (Артефакт: PDF, ссылки, заметки)
+model Artifact {
+  id          String      @id @default(uuid())
+  leaderId    String
+  cycleId     String?
+  type        String      // "PDF" | "LINK" | "NOTE"
+  title       String
+  url         String?
+  fileUrl     String?
+  fileName    String?
+  uploadedAt  DateTime    @default(now())
+  source      String?     // "Platrum" | "Wrike" | "GoogleDocs" | "Other"
+  tags        String[]    @default([])
+  aiStatus    String      @default("PENDING") // "PENDING" | "PROCESSED" | "FAILED"
+  errorMessage String?    @db.Text
+
+  leader      Leader      @relation(fields: [leaderId], references: [id], onDelete: Cascade)
+  cycle       Cycle?      @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+  
+  @@map("artifacts")
+  @@index([leaderId])
+  @@index([cycleId])
+}
+
+// AIReview (Результат AI анализа)
+model AIReview {
+  id                String      @id @default(uuid())
+  leaderId          String
+  cycleId           String?
+  artifactIds       String[]    @default([])
+  promptVersion     String      @default("v1")
+  createdAt         DateTime    @default(now())
+  overallScore      Int         // 0-100
+  criteriaScores    Json        // {structure: 85, clarity: 90, evidence: 78, planFact: 82, risks: 75}
+  strengths         String[]    @default([])
+  improvements      String[]    @default([])
+  risks             String[]    @default([])
+  recommendations   String[]    @default([])
+  summary           String      @db.Text
+  extractedQuotes   String[]    @default([])
+  rawModelOutput    Json?       // Полный JSON ответ от Gemini
+
+  leader      Leader      @relation(fields: [leaderId], references: [id], onDelete: Cascade)
+  cycle       Cycle?      @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+
+  @@map("ai_reviews")
+  @@index([leaderId])
+  @@index([cycleId])
+}
+
+// AuditLog (Логи действий)
+model AuditLog {
+  id          String      @id @default(uuid())
+  actionType  String      // "LOGIN", "CREATE_LEADER", "UPLOAD_PDF", "RUN_ANALYSIS", etc.
+  userId      String?     // email владельца
+  leaderId    String?
+  metadata    Json?       // Дополнительная информация
+  createdAt   DateTime    @default(now())
+
+  leader      Leader?     @relation(fields: [leaderId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+  @@index([actionType])
+  @@index([createdAt])
+}
