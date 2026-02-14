@@ -10,7 +10,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
   comparisonData,
   reportTitles,
 }) => {
-  const getCellColor = (values: (number | null)[], index: number) => {
+  const getCellColor = (values: (string | number | null)[], index: number) => {
     const value = values[index];
     if (value === null) return 'bg-gray-800';
 
