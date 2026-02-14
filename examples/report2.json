@@ -1,0 +1,32 @@
+{
+  "title": "Q2 2026 Leadership Report",
+  "date": "2026-06-30",
+  "leaders": [
+    {
+      "name": "John Smith",
+      "score": 89.2
+    },
+    {
+      "name": "Jane Doe",
+      "score": 94.1
+    },
+    {
+      "name": "Bob Johnson",
+      "score": 82.5
+    },
+    {
+      "name": "Alice Williams",
+      "score": 87.8
+    },
+    {
+      "name": "Charlie Brown",
+      "score": 93.4
+    }
+  ],
+  "additionalMetrics": {
+    "Total Teams": 18,
+    "Active Projects": 27,
+    "Budget Utilized": "85%",
+    "Employee Satisfaction": "4.5/5"
+  }
+}
