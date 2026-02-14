@@ -23,11 +23,11 @@ Provide JSON output with:
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
-  const text = response.text();
+  const responseText = response.text();
 
   try {
-    return JSON.parse(text);
+    return JSON.parse(responseText);
   } catch (e) {
-    return { raw: text, error: 'Failed to parse JSON' };
+    return { raw: responseText, error: 'Failed to parse JSON' };
   }
 }
